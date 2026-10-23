@@ -3,7 +3,7 @@ import { calculateRIL, emptyStops, QUESTIONS, type AnswerEntry } from "./ril";
 
 const upTo = (levels: Record<string, number>, verified = true) => {
   const a: Record<string, AnswerEntry> = {};
-  for (const q of QUESTIONS) if (q.level <= levels[q.domain]) a[q.id] = { answer: "yes", verified };
+  for (const q of QUESTIONS) if (q.level <= (levels[q.domain] ?? 0)) a[q.id] = { answer: "yes", verified };
   return a;
 };
 

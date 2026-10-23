@@ -37,7 +37,7 @@ function WizardInner({ a }: { a: ProjectAssessment }) {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const update = (patch: Partial<ProjectAssessment>) => saveAssessment({ ...a, ...patch });
-  const cur = STEPS[step];
+  const cur = STEPS[step]!;
   const setAnswer = (qid: string, answer: Answer) =>
     update({ answers: { ...a.answers, [qid]: { answer, verified: a.answers[qid]?.verified ?? false } } });
   const setVerified = (qid: string, verified: boolean) =>

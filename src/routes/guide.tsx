@@ -4,7 +4,7 @@ import { LEVELS } from "@/lib/ril";
 import { RilBadge, RilLadder, levelColor } from "@/components/ril/RilBits";
 
 export const Route = createFileRoute("/guide")({
-  validateSearch: (s: Record<string, unknown>): { level?: number } => (s.level ? { level: Math.min(9, Math.max(1, Number(s.level) || 5)) } : {}),
+  validateSearch: (s: Record<string, unknown>): { level?: number } => (s["level"] ? { level: Math.min(9, Math.max(1, Number(s["level"]) || 5)) } : {}),
   head: () => ({
     meta: [
       { title: "Kunnskapsbase – RIL-nivåene 1–9" },
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/guide")({
 function Guide() {
   const level = Route.useSearch().level ?? 5;
   const navigate = useNavigate({ from: "/guide" });
-  const l = LEVELS[level - 1];
+  const l = LEVELS[level - 1]!;
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
       <h1 className="text-4xl font-semibold">Kunnskapsbase</h1>

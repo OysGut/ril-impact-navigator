@@ -29,7 +29,7 @@ function Result() {
   if (!a) return <main className="p-12 text-center">Fant ikke vurderingen. <Link to="/" className="text-primary underline">Tilbake</Link></main>;
 
   const r = calculateRIL(a.answers, a.isStartup, a.stopTriggers);
-  const info = LEVELS[r.total - 1];
+  const info = LEVELS[r.total - 1]!;
   const domainLabel = (d: string) => DOMAINS.find((x) => x.id === d)!.label;
   const best = DOMAINS.reduce((m, d) => (r.domains[d.id] > r.domains[m.id] ? d : m));
   const capped = r.ceiling !== null && r.ceiling < Math.min(...Object.values(r.domains));
@@ -76,7 +76,7 @@ function Result() {
                   <div key={d.id} className={cn("rounded-2xl border bg-card p-5", isB && "ring-2 ring-destructive")}>
                     <div className="flex items-center gap-2 font-semibold" style={{ color: domainColor[d.id] }}><I className="h-5 w-5" />{d.label}</div>
                     <div className="mt-3 font-display text-5xl font-bold" style={{ color: levelColor(r.domains[d.id]) }}>{r.domains[d.id]}</div>
-                    <div className="text-xs text-muted-foreground">{LEVELS[r.domains[d.id] - 1].name}</div>
+                    <div className="text-xs text-muted-foreground">{LEVELS[r.domains[d.id] - 1]!.name}</div>
                     {isB && <div className="mt-3 inline-block rounded-full bg-destructive px-2.5 py-0.5 text-xs font-bold text-destructive-foreground">Flaskehals</div>}
                   </div>
                 );
