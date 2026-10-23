@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as GuideRouteImport } from './routes/guide'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ResultatIdRouteImport } from './routes/resultat.$id'
 import { Route as VurderingIdRouteImport } from './routes/vurdering.$id'
 
@@ -19,9 +21,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuideRoute = GuideRouteImport.update({
   id: '/guide',
   path: '/guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResultatIdRoute = ResultatIdRouteImport.update({
@@ -37,34 +49,61 @@ const VurderingIdRoute = VurderingIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/guide': typeof GuideRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/resultat/$id': typeof ResultatIdRoute
   '/vurdering/$id': typeof VurderingIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/guide': typeof GuideRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/resultat/$id': typeof ResultatIdRoute
   '/vurdering/$id': typeof VurderingIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/guide': typeof GuideRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/resultat/$id': typeof ResultatIdRoute
   '/vurdering/$id': typeof VurderingIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/guide' | '/resultat/$id' | '/vurdering/$id'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/guide'
+    | '/reset-password'
+    | '/resultat/$id'
+    | '/vurdering/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/guide' | '/resultat/$id' | '/vurdering/$id'
-  id: '__root__' | '/' | '/guide' | '/resultat/$id' | '/vurdering/$id'
+  to:
+    | '/'
+    | '/auth'
+    | '/guide'
+    | '/reset-password'
+    | '/resultat/$id'
+    | '/vurdering/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/guide'
+    | '/reset-password'
+    | '/resultat/$id'
+    | '/vurdering/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
   GuideRoute: typeof GuideRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   ResultatIdRoute: typeof ResultatIdRoute
   VurderingIdRoute: typeof VurderingIdRoute
 }
@@ -78,11 +117,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guide': {
       id: '/guide'
       path: '/guide'
       fullPath: '/guide'
       preLoaderRoute: typeof GuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/resultat/$id': {
@@ -104,7 +157,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
   GuideRoute: GuideRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   ResultatIdRoute: ResultatIdRoute,
   VurderingIdRoute: VurderingIdRoute,
 }
