@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 
 import { useT } from "@/lib/i18n";
 import { Navbar } from "@/components/ril/Navbar";
+import { Toaster } from "@/components/ui/sonner";
+import { initAuth } from "@/lib/auth";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -119,14 +121,32 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function Footer() {
+  const { tr } = useT();
+  return (
+    <footer className="no-print mx-auto max-w-6xl px-6 py-10 text-center text-xs text-muted-foreground">
+      {tr({ nb: "Vi selger ikke data og sporer deg ikke. Data lagres i EU (Irland).", en: "We don't sell data or track you. Data is stored in the EU (Ireland)." })}{" "}
+      <Link to="/personvern" className="underline">{tr({ nb: "Personvern", en: "Privacy" })}</Link>
+    </footer>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+  useEffect(() => {
+    initAuth(() => {
+      router.invalidate();
+    });
+  }, [router]);
 
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Navbar />
       <Outlet />
+      <Footer />
+      <Toaster />
     </QueryClientProvider>
   );
 }

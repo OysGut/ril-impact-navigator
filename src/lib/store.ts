@@ -1,21 +1,17 @@
 import { useSyncExternalStore } from "react";
 import type { ProjectAssessment } from "./ril";
+import { supabase } from "@/integrations/supabase/client";
+import { getUser, initAuth } from "./auth";
 
+/**
+ * Hybrid storage: browser localStorage when signed out, the user's account when signed in.
+ * On sign-in, local assessments are moved to the account.
+ */
 const KEY = "ril-assessments-v1";
 const listeners = new Set<() => void>();
 let cache: ProjectAssessment[] | null = null;
+let mode: "local" | "cloud" = "local";
 const EMPTY: ProjectAssessment[] = [];
-
-function read(): ProjectAssessment[] {
-  if (cache) return cache;
-  try {
-    const raw = JSON.parse(localStorage.getItem(KEY) || "[]") as ProjectAssessment[];
-    cache = raw.map(migrate);
-  } catch {
-    cache = [];
-  }
-  return cache!;
-}
 
 export const SCHEMA_VERSION = 2;
 
@@ -26,10 +22,52 @@ function migrate(a: ProjectAssessment): ProjectAssessment {
   return { ...a, answers: {}, schemaVersion: SCHEMA_VERSION, resetNotice: hadAnswers };
 }
 
-function write(list: ProjectAssessment[]) {
-  cache = list;
-  localStorage.setItem(KEY, JSON.stringify(list));
+function readLocal(): ProjectAssessment[] {
+  try {
+    return (JSON.parse(localStorage.getItem(KEY) || "[]") as ProjectAssessment[]).map(migrate);
+  } catch {
+    return [];
+  }
+}
+
+function emit() {
   listeners.forEach((l) => l());
+}
+
+function read(): ProjectAssessment[] {
+  if (!cache) {
+    cache = readLocal();
+    initAuth(onAuth);
+  }
+  return cache;
+}
+
+function set(list: ProjectAssessment[]) {
+  cache = list;
+  if (mode === "local") localStorage.setItem(KEY, JSON.stringify(list));
+  emit();
+}
+
+async function loadCloud(userId: string) {
+  const local = readLocal();
+  if (local.length) {
+    const rows = local.map((a) => ({ id: a.id, user_id: userId, data: a as never, updated_at: a.updatedAt || new Date().toISOString() }));
+    const { error } = await supabase.from("assessments").upsert(rows);
+    if (!error) localStorage.removeItem(KEY);
+  }
+  const { data } = await supabase.from("assessments").select("data").order("updated_at", { ascending: false });
+  mode = "cloud";
+  cache = (data ?? []).map((r) => migrate(r.data as unknown as ProjectAssessment));
+  emit();
+}
+
+function onAuth(_event: string, user: { id: string } | null) {
+  if (user) void loadCloud(user.id);
+  else {
+    mode = "local";
+    cache = readLocal();
+    emit();
+  }
 }
 
 export function useAssessments() {
@@ -44,10 +82,15 @@ export function useAssessments() {
 }
 
 export function saveAssessment(a: ProjectAssessment) {
-  const list = read().filter((x) => x.id !== a.id);
-  write([{ ...a, schemaVersion: SCHEMA_VERSION, updatedAt: new Date().toISOString() }, ...list]);
+  const item = { ...a, schemaVersion: SCHEMA_VERSION, updatedAt: new Date().toISOString() };
+  set([item, ...read().filter((x) => x.id !== a.id)]);
+  const u = getUser();
+  if (mode === "cloud" && u) {
+    void supabase.from("assessments").upsert({ id: item.id, user_id: u.id, data: item as never, updated_at: item.updatedAt });
+  }
 }
 
 export function deleteAssessment(id: string) {
-  write(read().filter((x) => x.id !== id));
+  set(read().filter((x) => x.id !== id));
+  if (mode === "cloud") void supabase.from("assessments").delete().eq("id", id);
 }
