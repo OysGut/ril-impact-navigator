@@ -18,10 +18,10 @@ export function RilMatrix({ r, c }: { r: RilResult; c: CertaintyResult }) {
   // Spread overlapping points a little so all three stay visible.
   const pts = DOMAINS.map((d, i) => ({ id: d.id, x: X(r.domains[d.id]) + (i - 1) * 1.6, y: Y(c.domains[d.id]) }));
   const quad = [
-    { x: 30, y: 72, t: tr({ nb: "Kartlegg først", en: "Map first" }) },
-    { x: 30, y: 28, t: tr({ nb: "Kjent skade – prioriter tiltak", en: "Known harm – prioritise action" }) },
-    { x: 70, y: 72, t: tr({ nb: "Lovende, men udokumentert", en: "Promising, but undocumented" }) },
-    { x: 70, y: 28, t: tr({ nb: "Dokumentert regenerativ", en: "Documented regenerative" }) },
+    { x: 30, y: 87, t: tr({ nb: "Kartlegg først", en: "Map first" }) },
+    { x: 30, y: 14, t: tr({ nb: "Kjent skade – prioriter tiltak", en: "Known harm – prioritise action" }) },
+    { x: 70, y: 87, t: tr({ nb: "Lovende, men udokumentert", en: "Promising, but undocumented" }) },
+    { x: 70, y: 14, t: tr({ nb: "Dokumentert regenerativ", en: "Documented regenerative" }) },
   ];
   const info = hover === null ? null : hover === "total"
     ? { title: tr({ nb: "Totalt", en: "Total" }), level: r.total, pct: c.total, weak: [] as CertaintyResult["weak"][Domain] }
@@ -39,7 +39,7 @@ export function RilMatrix({ r, c }: { r: RilResult; c: CertaintyResult }) {
           <line x1="50" y1="10" x2="50" y2="90" stroke="var(--ril-5)" strokeWidth="0.35" strokeDasharray="1.2 1" />
           <line x1="10" y1="50" x2="90" y2="50" stroke="var(--border)" strokeWidth="0.3" />
           {quad.map((q) => (
-            <text key={q.t} x={q.x} y={q.y} textAnchor="middle" fontSize="2.6" fill="var(--muted-foreground)" fontWeight="600">{q.t}</text>
+            <text key={q.t} x={q.x} y={q.y} textAnchor="middle" fontSize="2.4" fill="var(--muted-foreground)" fontWeight="600">{q.t}</text>
           ))}
           {Array.from({ length: 9 }, (_, i) => i + 1).map((l) => (
             <g key={l}>
