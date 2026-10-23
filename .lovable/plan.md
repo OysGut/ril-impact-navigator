@@ -36,6 +36,24 @@ Hvert spørsmål er en direkte «port» til ett nivå (spørsmål 5 = nivå 5), 
 - Hvert lag får «Hvorfor dette nivået?» med de konkrete kravene som er møtt (✓) og ikke møtt (✗), og hvilke svar de bygger på.
 - «Raskeste vei» peker på kravet som mangler for neste nivå, og hvilket svar som må endres.
 
+## Ny visning: Score og sikkerhet (matrise)
+- Resultatsiden får to faner: «Oversikt» (som i dag) og «Matrise».
+- Matrisen er et stort, kvadratisk diagram:
+  - Den vannrette aksen viser RIL-nivå 1–9, med en stiplet linje ved nivå 5.
+  - Den loddrette aksen viser hvor sikker scoren er, fra 0 til 100 %.
+- Hvert lag (Økologi, Samfunn, Økonomi) vises som en stor prikk i sin egen farge, og totalscoren som en egen markør.
+- Diagrammet deles i fire felt med korte tekster:
+  - **Lav score, lav sikkerhet:** «Kartlegg først»
+  - **Lav score, høy sikkerhet:** «Kjent skade – prioriter tiltak»
+  - **Høy score, lav sikkerhet:** «Lovende, men udokumentert»
+  - **Høy score, høy sikkerhet:** «Dokumentert regenerativ»
+- Sikkerheten regnes ut med faste regler per lag:
+  - Hvert besvart spørsmål med dokumentasjon teller fullt.
+  - Hvert besvart spørsmål uten dokumentasjon teller halvt.
+  - «Vet ikke» og ubesvarte spørsmål teller null.
+  - Oppstarter vurderes på potensial og får derfor alltid et tak på sikkerheten (60 %), med en forklaring om det.
+- Når man holder over en prikk, vises lagets nivå og sikkerhet, og hvilke spørsmål som trekker sikkerheten ned.
+
 ## Eksisterende vurderinger
 Gamle Ja/Nei-svar kan ikke overføres. Eksisterende vurderinger beholder navn, org.nr. og bransjer, men får blanke svar og en merknad om at de må besvares på nytt.
 
