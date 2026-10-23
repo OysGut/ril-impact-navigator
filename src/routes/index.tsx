@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Plus, BookOpen, Trash2 } from "lucide-react";
+import { Plus, BookOpen, Trash2, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +36,7 @@ function NewAssessment() {
   const [isStartup, setIsStartup] = useState(true);
   const [orgNumber, setOrgNumber] = useState<string | undefined>();
   const [nace, setNace] = useState<NaceCode[]>([]);
+  const [showBrreg, setShowBrreg] = useState(false);
   const pick = (c: BrregCompany) => {
     setName(c.name);
     setOrgNumber(c.orgNumber);
@@ -56,14 +57,25 @@ function NewAssessment() {
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader><DialogTitle className="font-display text-2xl">{tr({ nb: "Ny vurdering", en: "New assessment" })}</DialogTitle></DialogHeader>
         <div className="space-y-4">
-          <div className="space-y-1.5">
-            <Label>{tr({ nb: "Hent fra Brønnøysundregistrene (valgfritt)", en: "Fetch from the Brønnøysund Register (optional)" })}</Label>
-            <BrregSearch onSelect={pick} />
-            {orgNumber && <p className="text-xs text-muted-foreground">{tr({ nb: "Hentet fra Enhetsregisteret · org.nr.", en: "Fetched from the Central Coordinating Register · org. no." })} {orgNumber}</p>}
-          </div>
           <div className="space-y-1.5"><Label>{tr({ nb: "Prosjekt / virksomhet", en: "Project / business" })}</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder={tr({ nb: "F.eks. Fjordtare AS", en: "E.g. Fjordtare AS" })} /></div>
           <div className="space-y-1.5"><Label>{tr({ nb: "Bransje / kort beskrivelse", en: "Industry / short description" })}</Label><Input value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder={tr({ nb: "F.eks. Regenerativt tarehavbruk i Nord-Norge", en: "E.g. Regenerative kelp farming in Northern Norway" })} /></div>
           <div className="space-y-1.5"><Label>{tr({ nb: "Bransjer (NACE)", en: "Industries (NACE)" })}</Label><NacePicker value={nace} onChange={setNace} name={name} description={industry} /></div>
+          <div className="space-y-1.5">
+            {showBrreg ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <Label>{tr({ nb: "Hent fra Brønnøysundregistrene", en: "Fetch from the Brønnøysund Register" })}</Label>
+                  <button type="button" className="text-xs text-muted-foreground underline" onClick={() => setShowBrreg(false)}>{tr({ nb: "Skjul", en: "Hide" })}</button>
+                </div>
+                <BrregSearch onSelect={pick} />
+              </>
+            ) : (
+              <Button type="button" variant="link" size="sm" className="h-auto px-0 text-muted-foreground" onClick={() => setShowBrreg(true)}>
+                <Building2 /> {tr({ nb: "Har du et eksisterende selskap? Hent fra Brønnøysundregistrene", en: "Existing company? Fetch from the Brønnøysund Register" })}
+              </Button>
+            )}
+            {orgNumber && <p className="text-xs text-muted-foreground">{tr({ nb: "Hentet fra Enhetsregisteret · org.nr.", en: "Fetched from the Central Coordinating Register · org. no." })} {orgNumber}</p>}
+          </div>
           <div className="grid grid-cols-2 gap-2">
             {[
               { v: true, t: tr({ nb: "Oppstart / konsept", en: "Startup / concept" }), d: tr({ nb: "Vurderes på potensial (*)", en: "Assessed on potential (*)" }) },
