@@ -477,19 +477,44 @@ export function calculateRIL(answers: Record<string, AnswerEntry>, isStartup: bo
   return { total, asterisk: isStartup, label: `RIL ${total}${isStartup ? "*" : ""}`, domains, details, bottleneck, ceiling, activeStops, nextStep };
 }
 
-export const STARTUP_CERTAINTY_CAP = 60;
+/**
+ * Insight per answer option (0–4): what the answer reveals about how well the business
+ * understands its own impact – NOT how good the impact is. Honest admission of harm scores high.
+ * Index = option position in the question.
+ */
+export const INSIGHT: Record<string, [number, number, number, number, number]> = {
+  "eco-core": [4, 3, 2, 3, 4],
+  "eco-know": [0, 1, 3, 4, 4],
+  "eco-trend": [0, 1, 3, 4, 4],
+  "eco-restore": [1, 1, 2, 3, 4],
+  "eco-beyond": [1, 1, 2, 3, 4],
+  "eco-gov": [0, 1, 2, 3, 4],
+  "soc-rights": [0, 1, 3, 4, 4],
+  "soc-map": [0, 1, 2, 4, 4],
+  "soc-found": [0, 1, 2, 4, 4],
+  "soc-commons": [1, 1, 2, 3, 4],
+  "soc-power": [1, 1, 2, 3, 4],
+  "econ-ext": [3, 3, 2, 3, 4],
+  "econ-codes": [0, 1, 3, 4, 4],
+  "econ-fin": [1, 1, 2, 3, 4],
+  "econ-growth": [3, 3, 3, 3, 4],
+  "econ-own": [2, 2, 2, 3, 4],
+};
 
-export interface CertaintyResult {
+/** Answers with insight at or below this value are listed as lowering insight. */
+export const LOW_INSIGHT = 1;
+
+export interface InsightResult {
   domains: Record<Domain, number>;
   total: number;
-  /** Questions lowering certainty, per domain. */
-  weak: Record<Domain, { id: string; theme: string; reason: string }[]>;
+  /** Answers showing low insight, per domain. */
+  weak: Record<Domain, { id: string; theme: string; reason: string; answer?: string }[]>;
 }
 
-/** Documented = 1, answered undocumented = 0.5, «Vet ikke»/unanswered = 0. Startups are capped at 60 %. */
-export function calculateCertainty(answers: Record<string, AnswerEntry>, isStartup: boolean): CertaintyResult {
+/** Insight from answer content: mean of option insight (0–4) → %. «Vet ikke»/unanswered = 0. Documentation does not count. */
+export function calculateInsight(answers: Record<string, AnswerEntry>): InsightResult {
   const domains = {} as Record<Domain, number>;
-  const weak = {} as CertaintyResult["weak"];
+  const weak = {} as InsightResult["weak"];
   for (const d of DOMAINS) {
     const qs = QUESTIONS.filter((q) => q.domain === d.id);
     let sum = 0;
@@ -498,12 +523,13 @@ export function calculateCertainty(answers: Record<string, AnswerEntry>, isStart
       const a = answers[q.id];
       if (!a) { weak[d.id].push({ id: q.id, theme: q.theme, reason: "Ikke besvart" }); continue; }
       if (a.optionId === UNKNOWN) { weak[d.id].push({ id: q.id, theme: q.theme, reason: "Vet ikke" }); continue; }
-      if (a.verified) sum += 1;
-      else { sum += 0.5; weak[d.id].push({ id: q.id, theme: q.theme, reason: "Ikke dokumentert" }); }
+      const idx = q.options.findIndex((o) => o.id === a.optionId);
+      if (idx < 0) continue;
+      const v = INSIGHT[q.id]?.[idx] ?? 0;
+      sum += v;
+      if (v <= LOW_INSIGHT) weak[d.id].push({ id: q.id, theme: q.theme, reason: "Lav innsikt", answer: a.optionId });
     }
-    let pct = Math.round((sum / qs.length) * 100);
-    if (isStartup) pct = Math.round((pct * STARTUP_CERTAINTY_CAP) / 100);
-    domains[d.id] = pct;
+    domains[d.id] = Math.round((sum / (qs.length * 4)) * 100);
   }
   const total = Math.round((domains.ecology + domains.society + domains.economy) / 3);
   return { domains, total, weak };
