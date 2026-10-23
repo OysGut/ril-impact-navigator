@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Sparkles, X, Loader2, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n";
 import { getNaceCodes, suggestNace, type NaceCode } from "@/lib/nace.functions";
 
 const SYNONYMS: Record<string, string[]> = {
@@ -16,6 +17,7 @@ const SYNONYMS: Record<string, string[]> = {
 
 export function NacePicker({ value, onChange, name, description }: { value: NaceCode[]; onChange: (v: NaceCode[]) => void; name: string; description: string }) {
   const [q, setQ] = useState("");
+  const { tr } = useT();
   const fetchCodes = useServerFn(getNaceCodes);
   const suggestFn = useServerFn(suggestNace);
   const { data: codes = [], isLoading } = useQuery({ queryKey: ["nace"], queryFn: () => fetchCodes(), staleTime: Infinity });
@@ -41,9 +43,9 @@ export function NacePicker({ value, onChange, name, description }: { value: Nace
       const r = await suggestFn({ data: { name, description } });
       setSuggestions(r.suggestions);
       if (r.error) setError(r.error);
-      else if (!r.suggestions.length) setError("Fant ingen forslag – prøv å skrive en litt lengre beskrivelse.");
+      else if (!r.suggestions.length) setError(tr({ nb: "Fant ingen forslag – prøv å skrive en litt lengre beskrivelse.", en: "No suggestions found – try writing a slightly longer description." }));
     } catch {
-      setError("Kunne ikke hente forslag akkurat nå.");
+      setError(tr({ nb: "Kunne ikke hente forslag akkurat nå.", en: "Could not fetch suggestions right now." }));
     } finally { setBusy(false); }
   };
 
@@ -61,7 +63,7 @@ export function NacePicker({ value, onChange, name, description }: { value: Nace
       )}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={isLoading ? "Laster bransjer…" : "Søk bransje eller kode, f.eks. havbruk"} />
+          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={isLoading ? tr({ nb: "Laster bransjer…", en: "Loading industries…" }) : tr({ nb: "Søk bransje eller kode, f.eks. havbruk", en: "Search industry (in Norwegian) or code, e.g. havbruk" })} />
           {hits.length > 0 && (
             <div className="absolute z-50 mt-1 max-h-64 w-full overflow-auto rounded-xl border bg-popover p-1 shadow-lg">
               {hits.map((h) => (
@@ -73,13 +75,13 @@ export function NacePicker({ value, onChange, name, description }: { value: Nace
           )}
         </div>
         <Button type="button" variant="outline" size="sm" className="h-9" onClick={suggest} disabled={busy}>
-          {busy ? <Loader2 className="animate-spin" /> : <Sparkles />} Foreslå NACE
+          {busy ? <Loader2 className="animate-spin" /> : <Sparkles />} {tr({ nb: "Foreslå NACE", en: "Suggest NACE" })}
         </Button>
       </div>
       {error && <p className="text-xs text-destructive">{error}</p>}
       {suggestions.length > 0 && (
         <div className="space-y-1 rounded-xl border bg-muted/40 p-2">
-          <p className="px-1 text-xs font-semibold text-muted-foreground">KI-forslag – klikk for å legge til</p>
+          <p className="px-1 text-xs font-semibold text-muted-foreground">{tr({ nb: "KI-forslag – klikk for å legge til", en: "AI suggestions – click to add" })}</p>
           {suggestions.map((s) => (
             <button key={s.code} type="button" disabled={has(s.code)} onClick={() => add(s)} className="flex w-full items-start gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-background disabled:opacity-50">
               <Plus className="mt-0.5 h-4 w-4 shrink-0 text-primary" />

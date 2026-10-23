@@ -1,5 +1,7 @@
 import { cn } from "@/lib/utils";
 import { LEVELS, type Domain } from "@/lib/ril";
+import { levelText } from "@/lib/ril-text";
+import { useT } from "@/lib/i18n";
 import { Leaf, Users, Briefcase } from "lucide-react";
 
 export const levelColor = (n: number) => `var(--ril-${Math.max(1, Math.min(9, n))})`;
@@ -24,37 +26,41 @@ export function RilBadge({ level, asterisk, size = "md" }: { level: number; aste
 }
 
 export function RilLadder({ active, onSelect, selected }: { active?: number; selected?: number; onSelect?: (n: number) => void }) {
+  const { lang, tr } = useT();
   return (
     <div className="flex flex-col-reverse gap-1.5">
-      {LEVELS.map((l) => (
-        <div key={l.level}>
-          {l.level === 5 && (
-            <div className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              <span className="flex-1 border-t-2 border-dashed border-muted-foreground/50" />
-              ↑ Netto regenerativt · Netto skade ↓
-              <span className="flex-1 border-t-2 border-dashed border-muted-foreground/50" />
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={() => onSelect?.(l.level)}
-            className={cn(
-              "group flex w-full items-center gap-3 rounded-xl border bg-card px-3 py-2 text-left transition hover:translate-x-1",
-              (active === l.level || selected === l.level) && "ring-2 ring-offset-2 ring-offset-background",
+      {LEVELS.map((base) => {
+        const l = levelText(base.level, lang);
+        return (
+          <div key={l.level}>
+            {l.level === 5 && (
+              <div className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <span className="flex-1 border-t-2 border-dashed border-muted-foreground/50" />
+                {tr({ nb: "↑ Netto regenerativt · Netto skade ↓", en: "↑ Net regenerative · Net harm ↓" })}
+                <span className="flex-1 border-t-2 border-dashed border-muted-foreground/50" />
+              </div>
             )}
-            style={{ ["--tw-ring-color" as string]: levelColor(l.level) }}
-          >
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-display font-bold text-primary-foreground" style={{ backgroundColor: levelColor(l.level) }}>
-              {l.level}
-            </span>
-            <span className="flex-1">
-              <span className="block text-sm font-semibold">{l.name}</span>
-              <span className="block text-xs text-muted-foreground">{l.short}</span>
-            </span>
-            {active === l.level && <span className="text-xs font-bold" style={{ color: levelColor(l.level) }}>◀ Dere er her</span>}
-          </button>
-        </div>
-      ))}
+            <button
+              type="button"
+              onClick={() => onSelect?.(l.level)}
+              className={cn(
+                "group flex w-full items-center gap-3 rounded-xl border bg-card px-3 py-2 text-left transition hover:translate-x-1",
+                (active === l.level || selected === l.level) && "ring-2 ring-offset-2 ring-offset-background",
+              )}
+              style={{ ["--tw-ring-color" as string]: levelColor(l.level) }}
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-display font-bold text-primary-foreground" style={{ backgroundColor: levelColor(l.level) }}>
+                {l.level}
+              </span>
+              <span className="flex-1">
+                <span className="block text-sm font-semibold">{l.name}</span>
+                <span className="block text-xs text-muted-foreground">{l.short}</span>
+              </span>
+              {active === l.level && <span className="text-xs font-bold" style={{ color: levelColor(l.level) }}>◀ {tr({ nb: "Dere er her", en: "You are here" })}</span>}
+            </button>
+          </div>
+        );
+      })}
     </div>
   );
 }

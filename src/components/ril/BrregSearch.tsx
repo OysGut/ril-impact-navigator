@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Building2, Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useT } from "@/lib/i18n";
 import { searchBrreg, type BrregCompany } from "@/lib/brreg";
 
 export function BrregSearch({ onSelect }: { onSelect: (c: BrregCompany) => void }) {
   const [q, setQ] = useState("");
+  const { tr } = useT();
   const [hits, setHits] = useState<BrregCompany[]>([]);
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
@@ -27,12 +29,12 @@ export function BrregSearch({ onSelect }: { onSelect: (c: BrregCompany) => void 
   return (
     <div className="relative">
       <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-      <Input className="pl-9" value={q} onChange={(e) => setQ(e.target.value)} onFocus={() => setOpen(true)} placeholder="Firmanavn eller org.nr." />
+      <Input className="pl-9" value={q} onChange={(e) => setQ(e.target.value)} onFocus={() => setOpen(true)} placeholder={tr({ nb: "Firmanavn eller org.nr.", en: "Company name or org. no." })} />
       {busy && <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />}
       {open && q.trim().length >= 2 && !busy && (
         <div className="absolute z-50 mt-1 max-h-72 w-full overflow-auto rounded-xl border bg-popover p-1 shadow-lg">
           {hits.length === 0 ? (
-            <p className="px-3 py-2 text-sm text-muted-foreground">Ingen treff i Brønnøysundregistrene.</p>
+            <p className="px-3 py-2 text-sm text-muted-foreground">{tr({ nb: "Ingen treff i Brønnøysundregistrene.", en: "No matches in the Brønnøysund Register." })}</p>
           ) : hits.map((h) => (
             <button key={h.orgNumber} type="button" onClick={() => { onSelect(h); setOpen(false); setQ(""); }} className="flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left hover:bg-muted">
               <Building2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />

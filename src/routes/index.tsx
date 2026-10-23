@@ -6,7 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAssessments, saveAssessment, deleteAssessment } from "@/lib/store";
-import { calculateRIL, DOMAINS, emptyStops, LEVELS } from "@/lib/ril";
+import { calculateRIL, DOMAINS, LEVELS } from "@/lib/ril";
+import { domainLabel } from "@/lib/ril-text";
+import { useT } from "@/lib/i18n";
 import { RilBadge, domainColor } from "@/components/ril/RilBits";
 import { cn } from "@/lib/utils";
 import { BrregSearch } from "@/components/ril/BrregSearch";
@@ -27,6 +29,7 @@ export const Route = createFileRoute("/")({
 });
 
 function NewAssessment() {
+  const { tr } = useT();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [industry, setIndustry] = useState("");
@@ -42,29 +45,29 @@ function NewAssessment() {
   };
   const start = () => {
     const id = crypto.randomUUID();
-    saveAssessment({ id, name: name.trim() || "Uten navn", industry, orgNumber, nace, isStartup, answers: {}, stopTriggers: emptyStops(), updatedAt: "" });
+    saveAssessment({ id, name: name.trim() || tr({ nb: "Uten navn", en: "Untitled" }), industry, orgNumber, nace, isStartup, answers: {}, updatedAt: "" });
     navigate({ to: "/vurdering/$id", params: { id } });
   };
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size="lg"><Plus /> Start ny vurdering</Button>
+        <Button size="lg"><Plus /> {tr({ nb: "Start ny vurdering", en: "Start new assessment" })}</Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader><DialogTitle className="font-display text-2xl">Ny vurdering</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle className="font-display text-2xl">{tr({ nb: "Ny vurdering", en: "New assessment" })}</DialogTitle></DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label>Hent fra Brønnøysundregistrene (valgfritt)</Label>
+            <Label>{tr({ nb: "Hent fra Brønnøysundregistrene (valgfritt)", en: "Fetch from the Brønnøysund Register (optional)" })}</Label>
             <BrregSearch onSelect={pick} />
-            {orgNumber && <p className="text-xs text-muted-foreground">Hentet fra Enhetsregisteret · org.nr. {orgNumber}</p>}
+            {orgNumber && <p className="text-xs text-muted-foreground">{tr({ nb: "Hentet fra Enhetsregisteret · org.nr.", en: "Fetched from the Central Coordinating Register · org. no." })} {orgNumber}</p>}
           </div>
-          <div className="space-y-1.5"><Label>Prosjekt / virksomhet</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="F.eks. Fjordtare AS" /></div>
-          <div className="space-y-1.5"><Label>Bransje / kort beskrivelse</Label><Input value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="F.eks. Regenerativt tarehavbruk i Nord-Norge" /></div>
-          <div className="space-y-1.5"><Label>Bransjer (NACE)</Label><NacePicker value={nace} onChange={setNace} name={name} description={industry} /></div>
+          <div className="space-y-1.5"><Label>{tr({ nb: "Prosjekt / virksomhet", en: "Project / business" })}</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder={tr({ nb: "F.eks. Fjordtare AS", en: "E.g. Fjordtare AS" })} /></div>
+          <div className="space-y-1.5"><Label>{tr({ nb: "Bransje / kort beskrivelse", en: "Industry / short description" })}</Label><Input value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder={tr({ nb: "F.eks. Regenerativt tarehavbruk i Nord-Norge", en: "E.g. Regenerative kelp farming in Northern Norway" })} /></div>
+          <div className="space-y-1.5"><Label>{tr({ nb: "Bransjer (NACE)", en: "Industries (NACE)" })}</Label><NacePicker value={nace} onChange={setNace} name={name} description={industry} /></div>
           <div className="grid grid-cols-2 gap-2">
             {[
-              { v: true, t: "Oppstart / konsept", d: "Vurderes på potensial (*)" },
-              { v: false, t: "Etablert virksomhet", d: "Krever dokumentasjon" },
+              { v: true, t: tr({ nb: "Oppstart / konsept", en: "Startup / concept" }), d: tr({ nb: "Vurderes på potensial (*)", en: "Assessed on potential (*)" }) },
+              { v: false, t: tr({ nb: "Etablert virksomhet", en: "Established venture" }), d: tr({ nb: "Krever dokumentasjon", en: "Requires documentation" }) },
             ].map((o) => (
               <button key={o.t} type="button" onClick={() => setIsStartup(o.v)} className={cn("rounded-xl border p-3 text-left transition", isStartup === o.v ? "border-primary bg-accent" : "hover:bg-muted")}>
                 <div className="text-sm font-semibold">{o.t}</div>
@@ -72,7 +75,7 @@ function NewAssessment() {
               </button>
             ))}
           </div>
-          <Button className="w-full" onClick={start}>Start vurderingen</Button>
+          <Button className="w-full" onClick={start}>{tr({ nb: "Start vurderingen", en: "Start the assessment" })}</Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -80,18 +83,19 @@ function NewAssessment() {
 }
 
 function Dashboard() {
+  const { lang, tr } = useT();
   const list = useAssessments();
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
       <section className="relative overflow-hidden rounded-3xl border bg-card p-10 md:p-14" style={{ backgroundImage: "var(--gradient-nested)" }}>
         <p className="text-sm font-semibold uppercase tracking-widest text-primary">Regenerative Impact Level</p>
-        <h1 className="mt-3 max-w-2xl text-4xl font-semibold leading-tight md:text-6xl">Mindre dårlig er ikke det samme som godt.</h1>
+        <h1 className="mt-3 max-w-2xl text-4xl font-semibold leading-tight md:text-6xl">{tr({ nb: "Mindre dårlig er ikke det samme som godt.", en: "Less bad is not the same as good." })}</h1>
         <p className="mt-4 max-w-xl text-lg text-muted-foreground">
-          Mål virksomheten på en absolutt skala fra 1 til 9 – der det svakeste laget av natur, samfunn og økonomi bestemmer.
+          {tr({ nb: "Mål virksomheten på en absolutt skala fra 1 til 9 – der det svakeste laget av natur, samfunn og økonomi bestemmer.", en: "Measure the business on an absolute scale from 1 to 9 – where the weakest layer of nature, society and economy decides." })}
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <NewAssessment />
-          <Button size="lg" variant="outline" asChild><Link to="/guide"><BookOpen /> Utforsk RIL-nivåene</Link></Button>
+          <Button size="lg" variant="outline" asChild><Link to="/guide"><BookOpen /> {tr({ nb: "Utforsk RIL-nivåene", en: "Explore the RIL levels" })}</Link></Button>
         </div>
         <div className="mt-10 flex gap-1">
           {LEVELS.map((l) => (
@@ -100,19 +104,19 @@ function Dashboard() {
         </div>
       </section>
 
-      <h2 className="mt-14 text-2xl font-semibold">Mine vurderinger</h2>
+      <h2 className="mt-14 text-2xl font-semibold">{tr({ nb: "Mine vurderinger", en: "My assessments" })}</h2>
       {list.length === 0 ? (
-        <p className="mt-4 rounded-2xl border border-dashed p-10 text-center text-muted-foreground">Ingen vurderinger ennå. Start din første over.</p>
+        <p className="mt-4 rounded-2xl border border-dashed p-10 text-center text-muted-foreground">{tr({ nb: "Ingen vurderinger ennå. Start din første over.", en: "No assessments yet. Start your first one above." })}</p>
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((a) => {
-            const r = calculateRIL(a.answers, a.isStartup, a.stopTriggers);
+            const r = calculateRIL(a.answers, a.isStartup);
             return (
               <div key={a.id} className="group rounded-2xl border bg-card p-5 transition hover:shadow-md">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h3 className="text-lg font-semibold">{a.name}</h3>
-                    <p className="text-xs text-muted-foreground">{a.isStartup ? "Oppstart" : "Etablert"}{a.orgNumber && ` · ${a.orgNumber}`} · {new Date(a.updatedAt).toLocaleDateString("nb-NO")}</p>
+                    <p className="text-xs text-muted-foreground">{a.isStartup ? tr({ nb: "Oppstart", en: "Startup" }) : tr({ nb: "Etablert", en: "Established" })}{a.orgNumber && ` · ${a.orgNumber}`} · {new Date(a.updatedAt).toLocaleDateString(lang === "en" ? "en-GB" : "nb-NO")}</p>
                   </div>
                   <RilBadge level={r.total} asterisk={r.asterisk} size="sm" />
                 </div>
@@ -122,14 +126,14 @@ function Dashboard() {
                 <div className="mt-4 flex gap-2">
                   {DOMAINS.map((d) => (
                     <span key={d.id} className="rounded-full px-2.5 py-0.5 text-xs font-semibold text-primary-foreground" style={{ backgroundColor: domainColor[d.id] }}>
-                      {d.label} {r.domains[d.id]}
+                      {domainLabel(d.id, lang)} {r.domains[d.id]}
                     </span>
                   ))}
                 </div>
                 <div className="mt-5 flex gap-2">
-                  <Button size="sm" asChild><Link to="/resultat/$id" params={{ id: a.id }}>Se resultat</Link></Button>
-                  <Button size="sm" variant="outline" asChild><Link to="/vurdering/$id" params={{ id: a.id }}>Rediger</Link></Button>
-                  <Button size="sm" variant="ghost" className="ml-auto" aria-label="Slett" onClick={() => confirm("Slette vurderingen?") && deleteAssessment(a.id)}><Trash2 /></Button>
+                  <Button size="sm" asChild><Link to="/resultat/$id" params={{ id: a.id }}>{tr({ nb: "Se resultat", en: "See result" })}</Link></Button>
+                  <Button size="sm" variant="outline" asChild><Link to="/vurdering/$id" params={{ id: a.id }}>{tr({ nb: "Rediger", en: "Edit" })}</Link></Button>
+                  <Button size="sm" variant="ghost" className="ml-auto" aria-label={tr({ nb: "Slett", en: "Delete" })} onClick={() => confirm(tr({ nb: "Slette vurderingen?", en: "Delete the assessment?" })) && deleteAssessment(a.id)}><Trash2 /></Button>
                 </div>
               </div>
             );
