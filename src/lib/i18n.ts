@@ -32,7 +32,7 @@ export function useLang(): Lang {
       return () => listeners.delete(cb);
     },
     get,
-    () => "nb",
+    () => "en",
   );
 }
 
