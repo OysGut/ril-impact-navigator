@@ -39,7 +39,10 @@ function Result() {
       <section className="grid gap-8 rounded-3xl border bg-card p-8 md:grid-cols-[auto_1fr] md:p-12" style={{ backgroundImage: "var(--gradient-nested)" }}>
         <RilBadge level={r.total} asterisk={r.asterisk} size="lg" />
         <div>
-          <p className="text-sm text-muted-foreground">{a.name}</p>
+          <p className="text-sm text-muted-foreground">{a.name}{a.orgNumber && ` · org.nr. ${a.orgNumber}`}</p>
+          {a.nace && a.nace.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">{a.nace.map((n) => <span key={n.code} className="rounded-full bg-background/80 px-2.5 py-0.5 text-xs"><b>{n.code}</b> {n.name}</span>)}</div>
+          )}
           <h1 className="mt-1 text-4xl font-semibold" style={{ color: levelColor(r.total) }}>Nivå {r.total}{r.asterisk && "*"}: {info.name}</h1>
           <p className="mt-2 text-lg">{info.definition}</p>
           {r.asterisk && <p className="mt-3 text-sm italic text-muted-foreground">* Foreløpig designscore basert på potensial. Krever dokumenterte målinger i drift.</p>}
