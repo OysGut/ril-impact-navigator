@@ -4,6 +4,8 @@ import { z } from "zod";
 export interface NaceCode {
   code: string;
   name: string;
+  /** Lowercase search text (name + SSB notes); not stored on assessments. */
+  search?: string;
 }
 
 async function loadNace(): Promise<NaceCode[]> {
@@ -12,8 +14,8 @@ async function loadNace(): Promise<NaceCode[]> {
     headers: { Accept: "application/json" },
   });
   if (!res.ok) throw new Error("Kunne ikke hente NACE-listen fra SSB");
-  const json = (await res.json()) as { codes: { code: string; name: string; level: string }[] };
-  return json.codes.filter((c) => c.level === "5").map((c) => ({ code: c.code, name: c.name }));
+  const json = (await res.json()) as { codes: { code: string; name: string; level: string; shortName?: string; notes?: string }[] };
+  return json.codes.filter((c) => c.level === "5").map((c) => ({ code: c.code, name: c.name, search: `${c.name} ${c.shortName ?? ""} ${c.notes ?? ""}`.toLowerCase() }));
 }
 
 export const getNaceCodes = createServerFn({ method: "GET" }).handler(async () => loadNace());

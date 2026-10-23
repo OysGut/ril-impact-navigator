@@ -6,6 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getNaceCodes, suggestNace, type NaceCode } from "@/lib/nace.functions";
 
+const SYNONYMS: Record<string, string[]> = {
+  havbruk: ["akvakultur", "fiskeoppdrett"],
+  oppdrett: ["akvakultur"],
+  it: ["programmering", "informasjonsteknologi"],
+  landbruk: ["jordbruk", "dyrking"],
+  bygg: ["oppføring av bygninger"],
+};
+
 export function NacePicker({ value, onChange, name, description }: { value: NaceCode[]; onChange: (v: NaceCode[]) => void; name: string; description: string }) {
   const [q, setQ] = useState("");
   const fetchCodes = useServerFn(getNaceCodes);
@@ -18,7 +26,10 @@ export function NacePicker({ value, onChange, name, description }: { value: Nace
   const hits = useMemo(() => {
     const t = q.trim().toLowerCase();
     if (t.length < 2) return [];
-    return codes.filter((c) => c.code.startsWith(t) || c.name.toLowerCase().includes(t)).slice(0, 8);
+    const terms = [t, ...(SYNONYMS[t] ?? [])];
+    const byName = codes.filter((c) => c.code.startsWith(t) || terms.some((x) => c.name.toLowerCase().includes(x)));
+    const byNotes = codes.filter((c) => !byName.includes(c) && terms.some((x) => c.search?.includes(x)));
+    return [...byName, ...byNotes].slice(0, 10);
   }, [q, codes]);
 
   const has = (c: string) => value.some((v) => v.code === c);
