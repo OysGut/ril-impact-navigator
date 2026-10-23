@@ -149,12 +149,10 @@ function WizardInner({ a }: { a: ProjectAssessment }) {
           </button>
         </div>
 
-        {ans && ans.optionId !== UNKNOWN && (
+        {!a.isStartup && ans && ans.optionId !== UNKNOWN && (
           <label className="mt-4 flex items-center gap-2 text-sm">
             <Checkbox checked={ans.verified} onCheckedChange={(v) => update({ answers: { ...a.answers, [q.id]: { ...ans, verified: !!v } } })} />
-            {a.isStartup
-              ? tr({ nb: "Svaret er underbygget (pilot, forskning, avtaler eller beregninger)", en: "Answer is substantiated (pilot, research, agreements or calculations)" })
-              : tr({ nb: "Dette kan vi dokumentere", en: "We can document this" })}
+            {tr({ nb: "Dette kan vi dokumentere", en: "We can document this" })}
           </label>
         )}
       </article>
