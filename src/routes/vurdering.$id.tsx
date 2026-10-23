@@ -41,7 +41,7 @@ function WizardInner({ a }: { a: ProjectAssessment }) {
   const setAnswer = (qid: string, answer: Answer) =>
     update({ answers: { ...a.answers, [qid]: { answer, verified: a.answers[qid]?.verified ?? false } } });
   const setVerified = (qid: string, verified: boolean) =>
-    update({ answers: { ...a.answers, [qid]: { ...a.answers[qid], verified } } });
+    update({ answers: { ...a.answers, [qid]: { answer: a.answers[qid]?.answer ?? "yes", verified } } });
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
