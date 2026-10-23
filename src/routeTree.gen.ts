@@ -10,33 +10,63 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GuideRouteImport } from './routes/guide'
+import { Route as ResultatIdRouteImport } from './routes/resultat.$id'
+import { Route as VurderingIdRouteImport } from './routes/vurdering.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GuideRoute = GuideRouteImport.update({
+  id: '/guide',
+  path: '/guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResultatIdRoute = ResultatIdRouteImport.update({
+  id: '/resultat/$id',
+  path: '/resultat/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VurderingIdRoute = VurderingIdRouteImport.update({
+  id: '/vurdering/$id',
+  path: '/vurdering/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/guide': typeof GuideRoute
+  '/resultat/$id': typeof ResultatIdRoute
+  '/vurdering/$id': typeof VurderingIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/guide': typeof GuideRoute
+  '/resultat/$id': typeof ResultatIdRoute
+  '/vurdering/$id': typeof VurderingIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/guide': typeof GuideRoute
+  '/resultat/$id': typeof ResultatIdRoute
+  '/vurdering/$id': typeof VurderingIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/guide' | '/resultat/$id' | '/vurdering/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/guide' | '/resultat/$id' | '/vurdering/$id'
+  id: '__root__' | '/' | '/guide' | '/resultat/$id' | '/vurdering/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GuideRoute: typeof GuideRoute
+  ResultatIdRoute: typeof ResultatIdRoute
+  VurderingIdRoute: typeof VurderingIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +78,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/guide': {
+      id: '/guide'
+      path: '/guide'
+      fullPath: '/guide'
+      preLoaderRoute: typeof GuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resultat/$id': {
+      id: '/resultat/$id'
+      path: '/resultat/$id'
+      fullPath: '/resultat/$id'
+      preLoaderRoute: typeof ResultatIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vurdering/$id': {
+      id: '/vurdering/$id'
+      path: '/vurdering/$id'
+      fullPath: '/vurdering/$id'
+      preLoaderRoute: typeof VurderingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GuideRoute: GuideRoute,
+  ResultatIdRoute: ResultatIdRoute,
+  VurderingIdRoute: VurderingIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
