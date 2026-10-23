@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- RIL scoring rules live only in src/lib/ril.ts (calculateRIL) with tests in src/lib/ril.test.ts; UI must never re-implement scoring.
+- Assessments are stored in browser localStorage via src/lib/store.ts; swap this module if a backend is added.
