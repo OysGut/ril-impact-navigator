@@ -40,7 +40,7 @@ export function Navbar() {
     <header className="no-print sticky top-0 z-30 border-b bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6">
         <Link to="/" className="flex items-center gap-2 font-display text-xl font-semibold text-primary">
-          <Sprout className="h-6 w-6" /> RIL Navigator
+          <Sprout className="h-6 w-6" /> RIL Impact Navigator
         </Link>
         <div className="flex items-center gap-5">
           <nav className="hidden gap-6 text-sm font-medium text-muted-foreground sm:flex">
