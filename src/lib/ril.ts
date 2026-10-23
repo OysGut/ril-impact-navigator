@@ -498,7 +498,6 @@ export function calculateCertainty(answers: Record<string, AnswerEntry>, isStart
       const a = answers[q.id];
       if (!a) { weak[d.id].push({ id: q.id, theme: q.theme, reason: "Ikke besvart" }); continue; }
       if (a.optionId === UNKNOWN) { weak[d.id].push({ id: q.id, theme: q.theme, reason: "Vet ikke" }); continue; }
-      if (isStartup) { sum += 1; continue; }
       if (a.verified) sum += 1;
       else { sum += 0.5; weak[d.id].push({ id: q.id, theme: q.theme, reason: "Ikke dokumentert" }); }
     }

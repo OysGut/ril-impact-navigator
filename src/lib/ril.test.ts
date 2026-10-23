@@ -67,4 +67,7 @@ describe("calculateCertainty", () => {
   it("startups are capped at 60 %", () => {
     expect(calculateCertainty(answers({}, true), true).total).toBe(60);
   });
+  it("startup with only unsubstantiated answers = 30 %", () => {
+    expect(calculateCertainty(answers({}, false), true).total).toBe(30);
+  });
 });
