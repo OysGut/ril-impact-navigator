@@ -4,11 +4,18 @@ export type Lang = "nb" | "en";
 const KEY = "ril-lang";
 const listeners = new Set<() => void>();
 
+function browserLang(): Lang {
+  const langs = navigator.languages?.length ? navigator.languages : [navigator.language];
+  return langs.some((l) => /^(nb|nn|no)\b/i.test(l ?? "")) ? "nb" : "en";
+}
+
 function get(): Lang {
   try {
-    return localStorage.getItem(KEY) === "en" ? "en" : "nb";
+    const saved = localStorage.getItem(KEY);
+    if (saved === "en" || saved === "nb") return saved;
+    return browserLang();
   } catch {
-    return "nb";
+    return "en";
   }
 }
 
@@ -25,7 +32,7 @@ export function useLang(): Lang {
       return () => listeners.delete(cb);
     },
     get,
-    () => "nb",
+    () => "en",
   );
 }
 
