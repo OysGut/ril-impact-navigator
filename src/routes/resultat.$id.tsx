@@ -4,7 +4,7 @@ import { AlertTriangle, Zap, OctagonX, Sprout, Printer, Pencil, BookOpen, Check,
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAssessments } from "@/lib/store";
-import { calculateCertainty, calculateRIL, DOMAINS, questionById, UNKNOWN, type CheckedRequirement, type ProjectAssessment } from "@/lib/ril";
+import { calculateInsight, calculateRIL, DOMAINS, questionById, UNKNOWN, type CheckedRequirement, type ProjectAssessment } from "@/lib/ril";
 import { domainLabel, levelText, questionText, startList, stopList, warningText } from "@/lib/ril-text";
 import { useT, type Lang } from "@/lib/i18n";
 import { RilBadge, RilLadder, domainColor, DomainIcon, levelColor } from "@/components/ril/RilBits";
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/resultat/$id")({
   head: () => ({
     meta: [
       { title: "Resultat – RIL Navigator" },
-      { name: "description", content: "Din RIL-score, sikkerhet, flaskehals og veien til neste nivå." },
+      { name: "description", content: "Din RIL-score, innsikt, flaskehals og veien til neste nivå." },
       { property: "og:title", content: "RIL-resultat" },
       { property: "og:description", content: "Diagnose og veikart for regenerativ påvirkning." },
     ],
@@ -44,7 +44,7 @@ function Result() {
   if (!a) return <main className="p-12 text-center">{tr({ nb: "Fant ikke vurderingen.", en: "Assessment not found." })} <Link to="/" className="text-primary underline">{tr({ nb: "Tilbake", en: "Back" })}</Link></main>;
 
   const r = calculateRIL(a.answers, a.isStartup);
-  const c = calculateCertainty(a.answers, a.isStartup);
+  const c = calculateInsight(a.answers);
   const info = levelText(r.total, lang);
   const best = DOMAINS.reduce((m, d) => (r.domains[d.id] > r.domains[m.id] ? d : m));
   const capped = r.ceiling !== null && r.ceiling < Math.min(...Object.values(r.domains));
@@ -61,7 +61,7 @@ function Result() {
           )}
           <h1 className="mt-2 text-4xl font-semibold" style={{ color: levelColor(r.total) }}>{tr({ nb: "Nivå", en: "Level" })} {r.total}{r.asterisk && "*"}: {info.name}</h1>
           <p className="mt-2 text-lg">{info.definition}</p>
-          <p className="mt-2 text-sm text-muted-foreground">{tr({ nb: "Sikkerhet", en: "Certainty" })}: <b className="text-foreground">{c.total}%</b></p>
+          <p className="mt-2 text-sm text-muted-foreground">{tr({ nb: "Innsikt", en: "Insight" })}: <b className="text-foreground">{c.total}%</b></p>
           {r.asterisk && <p className="mt-2 text-sm italic text-muted-foreground">* {tr({ nb: "Foreløpig designscore basert på potensial. Krever dokumenterte målinger i drift.", en: "Preliminary design score based on potential. Requires documented measurements in operation." })}</p>}
           <p className="mt-4 rounded-xl bg-background/70 p-4 text-sm">
             {capped
@@ -107,7 +107,7 @@ function Result() {
                         <div className="flex items-center gap-2 font-semibold" style={{ color: domainColor[d.id] }}><I className="h-5 w-5" />{domainLabel(d.id, lang)}</div>
                         <div className="mt-3 flex items-baseline gap-3">
                           <span className="font-display text-5xl font-bold" style={{ color: levelColor(r.domains[d.id]) }}>{r.domains[d.id]}</span>
-                          <span className="text-xs text-muted-foreground">{c.domains[d.id]}% {tr({ nb: "sikkerhet", en: "certainty" })}</span>
+                          <span className="text-xs text-muted-foreground">{c.domains[d.id]}% {tr({ nb: "innsikt", en: "insight" })}</span>
                         </div>
                         <div className="text-xs text-muted-foreground">{levelText(r.domains[d.id], lang).name}</div>
                         {isB && <div className="mt-3 inline-block rounded-full bg-destructive px-2.5 py-0.5 text-xs font-bold text-destructive-foreground">{tr({ nb: "Flaskehals", en: "Bottleneck" })}</div>}
@@ -170,9 +170,9 @@ function Result() {
         </TabsContent>
 
         <TabsContent value="matrix" className="mt-6">
-          <h2 className="text-2xl font-semibold">{tr({ nb: "Score og sikkerhet", en: "Score and certainty" })}</h2>
+          <h2 className="text-2xl font-semibold">{tr({ nb: "RIL-nivå og innsikt", en: "RIL level and insight" })}</h2>
           <p className="mt-1 mb-6 max-w-2xl text-sm text-muted-foreground">
-            {tr({ nb: "Hvert lag plasseres etter nivå (vannrett) og hvor godt svarene er dokumentert (loddrett). Hold over en prikk for detaljer.", en: "Each layer is placed by level (horizontal) and how well the answers are documented (vertical). Hover a dot for details." })}
+            {tr({ nb: "Hvert lag plasseres etter RIL-nivå (loddrett) og hvor godt svarene viser at dere forstår egen påvirkning (vannrett). Hold over en prikk for detaljer.", en: "Each layer is placed by RIL level (vertical) and how well the answers show you understand your own impact (horizontal). Hover a dot for details." })}
           </p>
           <RilMatrix r={r} c={c} />
         </TabsContent>

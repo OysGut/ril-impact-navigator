@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateCertainty, calculateRIL, QUESTIONS, UNKNOWN, type AnswerEntry } from "./ril";
+import { calculateInsight, calculateRIL, INSIGHT, QUESTIONS, UNKNOWN, type AnswerEntry } from "./ril";
 
 /** Answer every question in a domain with the given maturity. */
 function answers(levels: Partial<Record<string, number>>, verified = true, overrides: Record<string, number> = {}) {
@@ -53,21 +53,26 @@ describe("calculateRIL", () => {
   });
 });
 
-describe("calculateCertainty", () => {
-  it("documented = 100 %, undocumented = 50 %", () => {
-    expect(calculateCertainty(answers({}, true), false).total).toBe(100);
-    expect(calculateCertainty(answers({}, false), false).total).toBe(50);
-  });
-  it("«Vet ikke» and unanswered count 0", () => {
+describe("calculateInsight", () => {
+  it("«Vet ikke» on everything and unanswered = 0 %", () => {
     const a: Record<string, AnswerEntry> = {};
     for (const q of QUESTIONS) a[q.id] = { optionId: UNKNOWN, verified: false };
-    expect(calculateCertainty(a, false).total).toBe(0);
-    expect(calculateCertainty({}, false).total).toBe(0);
+    expect(calculateInsight(a).total).toBe(0);
+    expect(calculateInsight({}).total).toBe(0);
   });
-  it("startups are capped at 60 %", () => {
-    expect(calculateCertainty(answers({}, true), true).total).toBe(60);
+  it("admitting a fossil core shows high insight despite maturity 0", () => {
+    const r = calculateInsight({ "eco-core": { optionId: "eco-core-0", verified: false } });
+    expect(INSIGHT["eco-core"]?.[0]).toBe(4);
+    expect(r.weak.ecology.some((w) => w.id === "eco-core")).toBe(false);
   });
-  it("startup with only unsubstantiated answers = 30 %", () => {
-    expect(calculateCertainty(answers({}, false), true).total).toBe(30);
+  it("«Vi har ikke sett på dette» is listed as low insight", () => {
+    const r = calculateInsight({ "eco-know": { optionId: "eco-know-0", verified: false } });
+    expect(r.weak.ecology.find((w) => w.id === "eco-know")?.reason).toBe("Lav innsikt");
+  });
+  it("documentation does not change insight", () => {
+    expect(calculateInsight(answers({}, true)).total).toBe(calculateInsight(answers({}, false)).total);
+  });
+  it("every question has an insight value for each option", () => {
+    for (const q of QUESTIONS) expect(INSIGHT[q.id]).toHaveLength(q.options.length);
   });
 });
