@@ -62,7 +62,7 @@ describe("calculateInsight", () => {
   });
   it("admitting a fossil core shows high insight despite maturity 0", () => {
     const r = calculateInsight({ "eco-core": { optionId: "eco-core-0", verified: false } });
-    expect(INSIGHT["eco-core"][0]).toBe(4);
+    expect(INSIGHT["eco-core"]?.[0]).toBe(4);
     expect(r.weak.ecology.some((w) => w.id === "eco-core")).toBe(false);
   });
   it("«Vi har ikke sett på dette» is listed as low insight", () => {

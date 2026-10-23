@@ -172,7 +172,7 @@ function Result() {
         <TabsContent value="matrix" className="mt-6">
           <h2 className="text-2xl font-semibold">{tr({ nb: "RIL-nivå og innsikt", en: "RIL level and insight" })}</h2>
           <p className="mt-1 mb-6 max-w-2xl text-sm text-muted-foreground">
-            {tr({ nb: "Hvert lag plasseres etter nivå (vannrett) og hvor godt svarene er dokumentert (loddrett). Hold over en prikk for detaljer.", en: "Each layer is placed by level (horizontal) and how well the answers are documented (vertical). Hover a dot for details." })}
+            {tr({ nb: "Hvert lag plasseres etter RIL-nivå (loddrett) og hvor godt svarene viser at dere forstår egen påvirkning (vannrett). Hold over en prikk for detaljer.", en: "Each layer is placed by RIL level (vertical) and how well the answers show you understand your own impact (horizontal). Hover a dot for details." })}
           </p>
           <RilMatrix r={r} c={c} />
         </TabsContent>
