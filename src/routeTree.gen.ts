@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as GuideRouteImport } from './routes/guide'
+import { Route as PersonvernRouteImport } from './routes/personvern'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ResultatIdRouteImport } from './routes/resultat.$id'
 import { Route as VurderingIdRouteImport } from './routes/vurdering.$id'
@@ -29,6 +30,11 @@ const AuthRoute = AuthRouteImport.update({
 const GuideRoute = GuideRouteImport.update({
   id: '/guide',
   path: '/guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PersonvernRoute = PersonvernRouteImport.update({
+  id: '/personvern',
+  path: '/personvern',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/guide': typeof GuideRoute
+  '/personvern': typeof PersonvernRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resultat/$id': typeof ResultatIdRoute
   '/vurdering/$id': typeof VurderingIdRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/guide': typeof GuideRoute
+  '/personvern': typeof PersonvernRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resultat/$id': typeof ResultatIdRoute
   '/vurdering/$id': typeof VurderingIdRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/guide': typeof GuideRoute
+  '/personvern': typeof PersonvernRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resultat/$id': typeof ResultatIdRoute
   '/vurdering/$id': typeof VurderingIdRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/guide'
+    | '/personvern'
     | '/reset-password'
     | '/resultat/$id'
     | '/vurdering/$id'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/guide'
+    | '/personvern'
     | '/reset-password'
     | '/resultat/$id'
     | '/vurdering/$id'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/guide'
+    | '/personvern'
     | '/reset-password'
     | '/resultat/$id'
     | '/vurdering/$id'
@@ -103,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   GuideRoute: typeof GuideRoute
+  PersonvernRoute: typeof PersonvernRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ResultatIdRoute: typeof ResultatIdRoute
   VurderingIdRoute: typeof VurderingIdRoute
@@ -129,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/guide'
       fullPath: '/guide'
       preLoaderRoute: typeof GuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/personvern': {
+      id: '/personvern'
+      path: '/personvern'
+      fullPath: '/personvern'
+      preLoaderRoute: typeof PersonvernRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -159,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   GuideRoute: GuideRoute,
+  PersonvernRoute: PersonvernRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ResultatIdRoute: ResultatIdRoute,
   VurderingIdRoute: VurderingIdRoute,

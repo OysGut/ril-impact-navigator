@@ -4,6 +4,7 @@ import { AlertTriangle, Zap, OctagonX, Sprout, Printer, Pencil, BookOpen, Check,
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAssessments } from "@/lib/store";
+import { useUser } from "@/lib/auth";
 import { calculateInsight, calculateRIL, DOMAINS, questionById, UNKNOWN, type CheckedRequirement, type ProjectAssessment } from "@/lib/ril";
 import { domainLabel, levelText, questionText, startList, stopList, warningText } from "@/lib/ril-text";
 import { useT, type Lang } from "@/lib/i18n";
@@ -37,6 +38,7 @@ function Result() {
   const { id } = Route.useParams();
   const { lang, tr } = useT();
   const list = useAssessments();
+  const user = useUser();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   if (!mounted) return null;
@@ -52,6 +54,12 @@ function Result() {
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
+      {!user && (
+        <div className="no-print mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/30 bg-accent p-4">
+          <p className="text-sm">{tr({ nb: "Resultatet ditt er klart! Lag en gratis bruker for å ta vare på det og finne det igjen på alle enheter.", en: "Your result is ready! Create a free account to keep it and find it on any device." })}</p>
+          <Button size="sm" asChild><Link to="/auth">{tr({ nb: "Lag bruker / logg inn", en: "Create account / sign in" })}</Link></Button>
+        </div>
+      )}
       <section className="grid gap-8 rounded-3xl border bg-card p-8 md:grid-cols-[auto_1fr] md:p-12" style={{ backgroundImage: "var(--gradient-nested)" }}>
         <RilBadge level={r.total} asterisk={r.asterisk} size="lg" />
         <div>
