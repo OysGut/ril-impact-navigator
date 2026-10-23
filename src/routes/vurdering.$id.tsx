@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { AlertTriangle, ChevronLeft, ChevronRight, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lightbulb, ShieldQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAssessments, saveAssessment } from "@/lib/store";
@@ -8,6 +8,7 @@ import { DOMAINS, QUESTIONS, STOP_TRIGGERS, type Answer, type ProjectAssessment 
 import { domainColor, DomainIcon } from "@/components/ril/RilBits";
 import { cn } from "@/lib/utils";
 import { NacePicker } from "@/components/ril/NacePicker";
+import { GUIDANCE, STOP_QUESTIONS } from "@/lib/guidance";
 
 export const Route = createFileRoute("/vurdering/$id")({
   head: () => ({
@@ -34,93 +35,126 @@ function Wizard() {
   return <WizardInner a={a} />;
 }
 
+type Item =
+  | { kind: "q"; id: string; section: string; q: (typeof QUESTIONS)[number] }
+  | { kind: "stop"; id: string; section: "stops"; stopId: keyof ProjectAssessment["stopTriggers"] };
+
+const ITEMS: Item[] = [
+  ...DOMAINS.flatMap((d) =>
+    QUESTIONS.filter((q) => q.domain === d.id).sort((x, y) => x.level - y.level).map((q) => ({ kind: "q" as const, id: q.id, section: d.id, q })),
+  ),
+  ...STOP_TRIGGERS.map((t) => ({ kind: "stop" as const, id: `stop-${t.id}`, section: "stops" as const, stopId: t.id })),
+];
+
 function WizardInner({ a }: { a: ProjectAssessment }) {
   const navigate = useNavigate();
-  const [step, setStep] = useState(0);
+  const [pos, setPos] = useState(() => {
+    const first = ITEMS.findIndex((it) => !a.answers[it.id]);
+    return first === -1 ? 0 : first;
+  });
   const update = (patch: Partial<ProjectAssessment>) => saveAssessment({ ...a, ...patch });
-  const cur = STEPS[step]!;
-  const setAnswer = (qid: string, answer: Answer) =>
-    update({ answers: { ...a.answers, [qid]: { answer, verified: a.answers[qid]?.verified ?? false } } });
-  const setVerified = (qid: string, verified: boolean) =>
-    update({ answers: { ...a.answers, [qid]: { answer: a.answers[qid]?.answer ?? "yes", verified } } });
+  const item = ITEMS[pos]!;
+  const ans = a.answers[item.id];
+  const sectionItems = ITEMS.filter((it) => it.section === item.section);
+  const sectionStep = STEPS.findIndex((s) => s.id === item.section);
+  const go = (n: number) => { setPos(Math.max(0, Math.min(ITEMS.length - 1, n))); window.scrollTo({ top: 0 }); };
+
+  const setAnswer = (answer: Answer) => {
+    const patch: Partial<ProjectAssessment> = {
+      answers: { ...a.answers, [item.id]: { answer, verified: ans?.verified ?? false } },
+    };
+    if (item.kind === "stop") patch.stopTriggers = { ...a.stopTriggers, [item.stopId]: answer === "yes" };
+    update(patch);
+  };
+  const setVerified = (verified: boolean) =>
+    update({ answers: { ...a.answers, [item.id]: { answer: ans?.answer ?? "yes", verified } } });
+
+  const question = item.kind === "q" ? item.q.question : STOP_QUESTIONS[item.stopId]!.question;
+  const guidance = item.kind === "q" ? (GUIDANCE[item.id] ?? []) : STOP_QUESTIONS[item.stopId]!.guidance;
+  const Icon = item.kind === "q" ? DomainIcon[item.q.domain] : ShieldQuestion;
+  const color = item.kind === "q" ? domainColor[item.q.domain] : "var(--ril-5)";
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
-      <p className="text-sm text-muted-foreground">{a.name} · {a.isStartup ? "Oppstart (potensial*)" : "Etablert (dokumentert)"} · lagres automatisk</p>
+      <p className="text-sm text-muted-foreground">{a.name} · lagres automatisk</p>
       <details className="mt-3 rounded-xl border bg-card p-3">
         <summary className="cursor-pointer text-sm font-medium">Bransjer (NACE): {a.nace?.length ? a.nace.map((n) => n.code).join(", ") : "ingen valgt"}</summary>
         <div className="mt-3"><NacePicker value={a.nace ?? []} onChange={(nace) => update({ nace })} name={a.name} description={a.industry} /></div>
       </details>
+
       <div className="mt-4 grid grid-cols-4 gap-2">
         {STEPS.map((s, i) => {
-          const done = s.id !== "stops" && QUESTIONS.filter((q) => q.domain === s.id).every((q) => a.answers[q.id]);
+          const its = ITEMS.filter((it) => it.section === s.id);
+          const answered = its.filter((it) => a.answers[it.id]).length;
           return (
-            <button key={s.id} onClick={() => setStep(i)} className={cn("rounded-xl border px-3 py-2 text-left text-sm transition", i === step ? "border-primary bg-accent font-semibold" : "bg-card hover:bg-muted")}>
-              <span className="block text-xs text-muted-foreground">Steg {i + 1}{done && " ✓"}</span>
+            <button key={s.id} onClick={() => go(ITEMS.indexOf(its[0]!))} className={cn("rounded-xl border px-3 py-2 text-left text-sm transition", i === sectionStep ? "border-primary bg-accent font-semibold" : "bg-card hover:bg-muted")}>
+              <span className="block text-xs text-muted-foreground">{answered}/{its.length} besvart</span>
               {s.label}
             </button>
           );
         })}
       </div>
 
-      {cur.id === "stops" ? (
-        <section className="mt-8 space-y-3">
-          <h1 className="text-3xl font-semibold">Grensesjekk</h1>
-          <p className="text-muted-foreground">Kryss av for det som gjelder. Disse setter et tak på nivået uansett andre svar.</p>
-          {STOP_TRIGGERS.map((s) => (
-            <label key={s.id} className="flex cursor-pointer items-start gap-3 rounded-2xl border bg-card p-4">
-              <Checkbox checked={a.stopTriggers[s.id]} onCheckedChange={(v) => update({ stopTriggers: { ...a.stopTriggers, [s.id]: !!v } })} className="mt-0.5" />
-              <span className="flex-1">
-                <span className="font-medium">{s.label}</span>
-                {a.stopTriggers[s.id] && (
-                  <span className="mt-2 flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive"><AlertTriangle className="h-4 w-4" />{s.warning}</span>
-                )}
-              </span>
-            </label>
-          ))}
-        </section>
-      ) : (
-        <section className="mt-8 space-y-4">
-          <div className="flex items-center gap-3">
-            {(() => { const I = DomainIcon[cur.id]; return <span className="flex h-10 w-10 items-center justify-center rounded-xl text-primary-foreground" style={{ backgroundColor: domainColor[cur.id] }}><I className="h-5 w-5" /></span>; })()}
-            <h1 className="text-3xl font-semibold">{cur.label}</h1>
-          </div>
-          {QUESTIONS.filter((q) => q.domain === cur.id).map((q) => {
-            const ans = a.answers[q.id];
-            return (
-              <article key={q.id} className="rounded-2xl border bg-card p-5" style={{ borderLeft: `4px solid var(--ril-${q.level})` }}>
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <span className="rounded-full px-2.5 py-0.5 font-bold text-primary-foreground" style={{ backgroundColor: `var(--ril-${q.level})` }}>Port til nivå {q.level}</span>
-                  <span className="rounded-full bg-muted px-2.5 py-0.5 text-muted-foreground">FBC: {q.fbcBox}</span>
-                </div>
-                <h3 className="mt-3 font-sans text-base font-semibold leading-snug">{q.question}</h3>
-                <p className="mt-2 flex gap-2 text-sm text-muted-foreground"><Info className="mt-0.5 h-4 w-4 shrink-0" />{q.helpText}</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {([["yes", "Ja"], ["no", "Nei"], ["unsure", "Usikker / pågår"]] as const).map(([v, t]) => (
-                    <Button key={v} size="sm" variant={ans?.answer === v ? "default" : "outline"} onClick={() => setAnswer(q.id, v)}>{t}</Button>
-                  ))}
-                </div>
-                {ans?.answer === "yes" && (
-                  <label className="mt-3 flex items-center gap-2 text-sm">
-                    <Checkbox checked={ans.verified} onCheckedChange={(v) => setVerified(q.id, !!v)} />
-                    Vi har dokumentasjon / bevis for dette
-                    {!a.isStartup && !ans.verified && <span className="text-xs text-destructive">(kreves for etablerte)</span>}
-                  </label>
-                )}
-              </article>
-            );
-          })}
-        </section>
-      )}
+      <div className="mt-4 flex flex-wrap gap-1.5" aria-label="Spørsmål i denne delen">
+        {sectionItems.map((it, i) => (
+          <button
+            key={it.id}
+            onClick={() => go(ITEMS.indexOf(it))}
+            aria-label={`Spørsmål ${i + 1}`}
+            className={cn(
+              "h-8 w-8 rounded-full border text-xs font-semibold transition",
+              it.id === item.id ? "border-primary bg-primary text-primary-foreground" : a.answers[it.id] ? "bg-accent text-accent-foreground" : "bg-card text-muted-foreground hover:bg-muted",
+            )}
+          >
+            {i + 1}
+          </button>
+        ))}
+      </div>
 
-      <div className="mt-8 flex justify-between">
-        <Button variant="outline" disabled={step === 0} onClick={() => setStep(step - 1)}><ChevronLeft /> Forrige</Button>
-        {step < STEPS.length - 1 ? (
-          <Button onClick={() => { setStep(step + 1); window.scrollTo({ top: 0 }); }}>Neste <ChevronRight /></Button>
+      <article key={item.id} className="mt-6 rounded-3xl border bg-card p-8 md:p-10">
+        <div className="flex items-center gap-2 text-sm font-semibold" style={{ color }}>
+          <Icon className="h-4 w-4" />
+          {STEPS[sectionStep]!.label} · spørsmål {sectionItems.indexOf(item) + 1} av {sectionItems.length}
+        </div>
+        <h1 className="mt-4 text-2xl font-semibold leading-snug md:text-3xl">{question}</h1>
+
+        {guidance.length > 0 && (
+          <div className="mt-6 rounded-2xl bg-muted/60 p-5">
+            <p className="flex items-center gap-2 text-sm font-semibold"><Lightbulb className="h-4 w-4 text-primary" /> Slik kan du forstå spørsmålet</p>
+            <ul className="mt-3 space-y-2">
+              {guidance.map((g) => (
+                <li key={g} className="flex gap-2 text-sm leading-relaxed text-muted-foreground"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />{g}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {item.kind === "q" && <p className="mt-4 text-xs text-muted-foreground">Flourishing Business Canvas: {item.q.fbcBox}</p>}
+
+        <div className="mt-6 grid gap-2 sm:grid-cols-3">
+          {([["yes", "Ja"], ["no", "Nei"], ["unsure", "Usikker / pågår"]] as const).map(([v, t]) => (
+            <Button key={v} size="lg" variant={ans?.answer === v ? "default" : "outline"} onClick={() => setAnswer(v)}>{t}</Button>
+          ))}
+        </div>
+        {item.kind === "q" && ans?.answer === "yes" && (
+          <label className="mt-4 flex items-center gap-2 text-sm">
+            <Checkbox checked={ans.verified} onCheckedChange={(v) => setVerified(!!v)} />
+            Vi har dokumentasjon / bevis for dette
+          </label>
+        )}
+      </article>
+
+      <div className="mt-6 flex justify-between">
+        <Button variant="outline" disabled={pos === 0} onClick={() => go(pos - 1)}><ChevronLeft /> Forrige</Button>
+        {pos < ITEMS.length - 1 ? (
+          <Button onClick={() => go(pos + 1)}>{ans ? "Neste" : "Hopp over"} <ChevronRight /></Button>
         ) : (
           <Button onClick={() => navigate({ to: "/resultat/$id", params: { id: a.id } })}>Se resultat <ChevronRight /></Button>
         )}
       </div>
+      <p className="mt-6 text-center text-xs text-muted-foreground">
+        <Link to="/resultat/$id" params={{ id: a.id }} className="underline">Gå til resultat</Link>
+      </p>
     </main>
   );
 }
