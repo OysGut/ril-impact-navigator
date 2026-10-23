@@ -6,7 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAssessments, saveAssessment, deleteAssessment } from "@/lib/store";
-import { calculateRIL, DOMAINS, emptyStops, LEVELS } from "@/lib/ril";
+import { calculateRIL, DOMAINS, LEVELS } from "@/lib/ril";
+import { domainLabel } from "@/lib/ril-text";
+import { useT } from "@/lib/i18n";
 import { RilBadge, domainColor } from "@/components/ril/RilBits";
 import { cn } from "@/lib/utils";
 import { BrregSearch } from "@/components/ril/BrregSearch";
@@ -27,6 +29,7 @@ export const Route = createFileRoute("/")({
 });
 
 function NewAssessment() {
+  const { tr } = useT();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [industry, setIndustry] = useState("");
@@ -48,7 +51,7 @@ function NewAssessment() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size="lg"><Plus /> Start ny vurdering</Button>
+        <Button size="lg"><Plus /> {tr({ nb: "Start ny vurdering", en: "Start new assessment" })}</Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader><DialogTitle className="font-display text-2xl">{tr({ nb: "Ny vurdering", en: "New assessment" })}</DialogTitle></DialogHeader>
@@ -80,6 +83,7 @@ function NewAssessment() {
 }
 
 function Dashboard() {
+  const { lang, tr } = useT();
   const list = useAssessments();
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
@@ -87,11 +91,11 @@ function Dashboard() {
         <p className="text-sm font-semibold uppercase tracking-widest text-primary">Regenerative Impact Level</p>
         <h1 className="mt-3 max-w-2xl text-4xl font-semibold leading-tight md:text-6xl">{tr({ nb: "Mindre dårlig er ikke det samme som godt.", en: "Less bad is not the same as good." })}</h1>
         <p className="mt-4 max-w-xl text-lg text-muted-foreground">
-          Mål virksomheten på en absolutt skala fra 1 til 9 – der det svakeste laget av natur, samfunn og økonomi bestemmer.
+          {tr({ nb: "Mål virksomheten på en absolutt skala fra 1 til 9 – der det svakeste laget av natur, samfunn og økonomi bestemmer.", en: "Measure the business on an absolute scale from 1 to 9 – where the weakest layer of nature, society and economy decides." })}
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <NewAssessment />
-          <Button size="lg" variant="outline" asChild><Link to="/guide"><BookOpen /> Utforsk RIL-nivåene</Link></Button>
+          <Button size="lg" variant="outline" asChild><Link to="/guide"><BookOpen /> {tr({ nb: "Utforsk RIL-nivåene", en: "Explore the RIL levels" })}</Link></Button>
         </div>
         <div className="mt-10 flex gap-1">
           {LEVELS.map((l) => (
@@ -122,7 +126,7 @@ function Dashboard() {
                 <div className="mt-4 flex gap-2">
                   {DOMAINS.map((d) => (
                     <span key={d.id} className="rounded-full px-2.5 py-0.5 text-xs font-semibold text-primary-foreground" style={{ backgroundColor: domainColor[d.id] }}>
-                      {d.label} {r.domains[d.id]}
+                      {domainLabel(d.id, lang)} {r.domains[d.id]}
                     </span>
                   ))}
                 </div>
