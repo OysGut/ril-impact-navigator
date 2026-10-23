@@ -64,4 +64,7 @@ Gamle Ja/Nei-svar kan ikke overføres. Eksisterende vurderinger beholder navn, o
 - `answers: Record<questionId, { optionId, verified }>`; versjonsfelt `schemaVersion: 2` i lagringen for å nullstille gamle svar.
 - `src/lib/guidance.ts` slås inn i spørsmålsdataene; `STOP_QUESTIONS` fjernes.
 - Veiviseren (`vurdering.$id.tsx`) viser alternativene som store, klikkbare kort; resultatsiden viser forklaringen.
-- Testene i `ril.test.ts` skrives om: weakest-layer, stopptak via flagg, dokumentasjonsregel for etablerte, «Vet ikke» = laveste, og ett eksempel per nivåkrav for nivå 5.
+- `calculateCertainty(answers, isStartup)` i `ril.ts` returnerer 0–100 per lag + totalt (gjennomsnitt), samt liste over spørsmål som trekker ned.
+- Matrisen bygges som en egen SVG-komponent `RilMatrix` (kvadratisk, skalerer med bredden), fanene med shadcn `Tabs`.
+- Testene i `ril.test.ts` skrives om: weakest-layer, stopptak via flagg, dokumentasjonsregel for etablerte, «Vet ikke» = laveste, og ett eksempel per nivåkrav for nivå 5. I tillegg testes sikkerhetsreglene (dokumentert = 1, udokumentert = 0,5, «Vet ikke» = 0, tak på 60 % for oppstarter).
+- `roadmap.md` opprettes med disse to oppgavene ved oppstart av byggingen.
