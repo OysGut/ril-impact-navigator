@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ExternalLink, Quote } from "lucide-react";
-import { LEVELS } from "@/lib/ril";
+import { levelText } from "@/lib/ril-text";
+import { useT } from "@/lib/i18n";
 import { RilBadge, RilLadder, levelColor } from "@/components/ril/RilBits";
 
 export const Route = createFileRoute("/guide")({
@@ -19,11 +20,12 @@ export const Route = createFileRoute("/guide")({
 function Guide() {
   const level = Route.useSearch().level ?? 5;
   const navigate = useNavigate({ from: "/guide" });
-  const l = LEVELS[level - 1]!;
+  const { lang, tr } = useT();
+  const l = levelText(level, lang);
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
-      <h1 className="text-4xl font-semibold">Kunnskapsbase</h1>
-      <p className="mt-2 max-w-2xl text-muted-foreground">Sterk bærekraft: Natur ⊃ Samfunn ⊃ Økonomi. Klikk et nivå for å lære hva det betyr i praksis.</p>
+      <h1 className="text-4xl font-semibold">{tr({ nb: "Kunnskapsbase", en: "Knowledge base" })}</h1>
+      <p className="mt-2 max-w-2xl text-muted-foreground">{tr({ nb: "Sterk bærekraft: Natur ⊃ Samfunn ⊃ Økonomi. Klikk et nivå for å lære hva det betyr i praksis.", en: "Strong sustainability: Nature ⊃ Society ⊃ Economy. Click a level to learn what it means in practice." })}</p>
       <div className="mt-8 grid gap-8 md:grid-cols-[340px_1fr]">
         <RilLadder selected={level} onSelect={(n) => navigate({ search: { level: n }, replace: true })} />
         <article className="rounded-3xl border bg-card p-8" style={{ borderTop: `6px solid ${levelColor(level)}` }}>
@@ -35,11 +37,11 @@ function Guide() {
             </div>
           </div>
           <p className="mt-6 text-lg">{l.definition}</p>
-          <h3 className="mt-6 text-lg font-semibold">I praksis</h3>
+          <h3 className="mt-6 text-lg font-semibold">{tr({ nb: "I praksis", en: "In practice" })}</h3>
           <p className="mt-1 text-muted-foreground">{l.practice}</p>
-          <h3 className="mt-6 text-lg font-semibold">Aktiverte FBC-bokser</h3>
+          <h3 className="mt-6 text-lg font-semibold">{tr({ nb: "Aktiverte FBC-bokser", en: "Activated FBC boxes" })}</h3>
           <div className="mt-2 flex flex-wrap gap-2">{l.fbc.map((f) => <span key={f} className="rounded-full bg-accent px-3 py-1 text-sm text-accent-foreground">{f}</span>)}</div>
-          <h3 className="mt-6 text-lg font-semibold">Rammeverk og ressurser</h3>
+          <h3 className="mt-6 text-lg font-semibold">{tr({ nb: "Rammeverk og ressurser", en: "Frameworks and resources" })}</h3>
           <div className="mt-2 flex flex-wrap gap-2">
             {l.frameworks.map((f) => (
               <a key={f.name} href={f.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm hover:bg-muted">{f.name}<ExternalLink className="h-3.5 w-3.5" /></a>

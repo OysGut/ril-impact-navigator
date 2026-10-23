@@ -9,11 +9,21 @@ const EMPTY: ProjectAssessment[] = [];
 function read(): ProjectAssessment[] {
   if (cache) return cache;
   try {
-    cache = JSON.parse(localStorage.getItem(KEY) || "[]");
+    const raw = JSON.parse(localStorage.getItem(KEY) || "[]") as ProjectAssessment[];
+    cache = raw.map(migrate);
   } catch {
     cache = [];
   }
   return cache!;
+}
+
+export const SCHEMA_VERSION = 2;
+
+/** Old yes/no answers cannot be mapped to the descriptive model – clear them and flag it. */
+function migrate(a: ProjectAssessment): ProjectAssessment {
+  if (a.schemaVersion === SCHEMA_VERSION) return a;
+  const hadAnswers = Object.keys(a.answers ?? {}).length > 0;
+  return { ...a, answers: {}, schemaVersion: SCHEMA_VERSION, resetNotice: hadAnswers };
 }
 
 function write(list: ProjectAssessment[]) {
@@ -35,7 +45,7 @@ export function useAssessments() {
 
 export function saveAssessment(a: ProjectAssessment) {
   const list = read().filter((x) => x.id !== a.id);
-  write([{ ...a, updatedAt: new Date().toISOString() }, ...list]);
+  write([{ ...a, schemaVersion: SCHEMA_VERSION, updatedAt: new Date().toISOString() }, ...list]);
 }
 
 export function deleteAssessment(id: string) {
