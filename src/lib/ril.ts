@@ -17,6 +17,8 @@ export interface ProjectAssessment {
   id: string;
   name: string;
   industry: string;
+  orgNumber?: string;
+  nace?: { code: string; name: string }[];
   isStartup: boolean;
   answers: Record<string, AnswerEntry>;
   stopTriggers: StopTriggers;
