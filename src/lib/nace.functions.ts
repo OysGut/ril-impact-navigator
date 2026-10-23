@@ -34,7 +34,7 @@ export const suggestNace = createServerFn({ method: "POST" })
       const result = streamText({
         model: provider.responses("openai/gpt-6-astra"),
         instructions:
-          "Du er ekspert på norsk standard for næringsgruppering (SN/NACE, SSB). Foreslå 3–5 mest relevante næringskoder på 5-siffernivå (format 00.000) for virksomheten. Gi en kort begrunnelse på bokmål for hver.",
+          "Du er ekspert på norsk standard for næringsgruppering (SN/NACE, SSB). Foreslå 3–5 mest relevante næringskoder på 5-siffernivå (format 00.000) for virksomheten. Velg KUN koder fra listen under, og bruk koden nøyaktig slik den står. Gi en kort begrunnelse på bokmål for hver.\n\nGyldige koder:\n" + codes.map((c) => `${c.code} ${c.name}`).join("\n"),
         prompt: `Navn: ${data.name || "(ikke oppgitt)"}\nBeskrivelse: ${data.description || "(ikke oppgitt)"}`,
         output: Output.object({
           schema: z.object({
