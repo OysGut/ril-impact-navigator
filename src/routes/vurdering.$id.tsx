@@ -7,6 +7,7 @@ import { useAssessments, saveAssessment } from "@/lib/store";
 import { DOMAINS, QUESTIONS, STOP_TRIGGERS, type Answer, type ProjectAssessment } from "@/lib/ril";
 import { domainColor, DomainIcon } from "@/components/ril/RilBits";
 import { cn } from "@/lib/utils";
+import { NacePicker } from "@/components/ril/NacePicker";
 
 export const Route = createFileRoute("/vurdering/$id")({
   head: () => ({
@@ -46,6 +47,10 @@ function WizardInner({ a }: { a: ProjectAssessment }) {
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
       <p className="text-sm text-muted-foreground">{a.name} · {a.isStartup ? "Oppstart (potensial*)" : "Etablert (dokumentert)"} · lagres automatisk</p>
+      <details className="mt-3 rounded-xl border bg-card p-3">
+        <summary className="cursor-pointer text-sm font-medium">Bransjer (NACE): {a.nace?.length ? a.nace.map((n) => n.code).join(", ") : "ingen valgt"}</summary>
+        <div className="mt-3"><NacePicker value={a.nace ?? []} onChange={(nace) => update({ nace })} name={a.name} description={a.industry} /></div>
+      </details>
       <div className="mt-4 grid grid-cols-4 gap-2">
         {STEPS.map((s, i) => {
           const done = s.id !== "stops" && QUESTIONS.filter((q) => q.domain === s.id).every((q) => a.answers[q.id]);

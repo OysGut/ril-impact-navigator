@@ -11,3 +11,4 @@
 
 - RIL scoring rules live only in src/lib/ril.ts (calculateRIL) with tests in src/lib/ril.test.ts; UI must never re-implement scoring.
 - Assessments are stored in browser localStorage via src/lib/store.ts; swap this module if a backend is added.
+- Company lookup calls the public Brønnøysund API directly from the browser (src/lib/brreg.ts); NACE codes come from SSB Klass via server function and AI suggestions are validated against that list (src/lib/nace.functions.ts).

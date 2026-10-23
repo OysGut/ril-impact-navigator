@@ -9,6 +9,10 @@ import { useAssessments, saveAssessment, deleteAssessment } from "@/lib/store";
 import { calculateRIL, DOMAINS, emptyStops, LEVELS } from "@/lib/ril";
 import { RilBadge, domainColor } from "@/components/ril/RilBits";
 import { cn } from "@/lib/utils";
+import { BrregSearch } from "@/components/ril/BrregSearch";
+import { NacePicker } from "@/components/ril/NacePicker";
+import { isEstablished, type BrregCompany } from "@/lib/brreg";
+import type { NaceCode } from "@/lib/nace.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,9 +31,18 @@ function NewAssessment() {
   const [name, setName] = useState("");
   const [industry, setIndustry] = useState("");
   const [isStartup, setIsStartup] = useState(true);
+  const [orgNumber, setOrgNumber] = useState<string | undefined>();
+  const [nace, setNace] = useState<NaceCode[]>([]);
+  const pick = (c: BrregCompany) => {
+    setName(c.name);
+    setOrgNumber(c.orgNumber);
+    setNace(c.nace);
+    if (c.activity) setIndustry(c.activity.slice(0, 300));
+    setIsStartup(!isEstablished(c.registeredDate));
+  };
   const start = () => {
     const id = crypto.randomUUID();
-    saveAssessment({ id, name: name.trim() || "Uten navn", industry, isStartup, answers: {}, stopTriggers: emptyStops(), updatedAt: "" });
+    saveAssessment({ id, name: name.trim() || "Uten navn", industry, orgNumber, nace, isStartup, answers: {}, stopTriggers: emptyStops(), updatedAt: "" });
     navigate({ to: "/vurdering/$id", params: { id } });
   };
   return (
@@ -37,11 +50,17 @@ function NewAssessment() {
       <DialogTrigger asChild>
         <Button size="lg"><Plus /> Start ny vurdering</Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader><DialogTitle className="font-display text-2xl">Ny vurdering</DialogTitle></DialogHeader>
         <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>Hent fra Brønnøysundregistrene (valgfritt)</Label>
+            <BrregSearch onSelect={pick} />
+            {orgNumber && <p className="text-xs text-muted-foreground">Hentet fra Enhetsregisteret · org.nr. {orgNumber}</p>}
+          </div>
           <div className="space-y-1.5"><Label>Prosjekt / virksomhet</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="F.eks. Fjordtare AS" /></div>
-          <div className="space-y-1.5"><Label>Bransje / kort beskrivelse</Label><Input value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="F.eks. Havbruk" /></div>
+          <div className="space-y-1.5"><Label>Bransje / kort beskrivelse</Label><Input value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="F.eks. Regenerativt tarehavbruk i Nord-Norge" /></div>
+          <div className="space-y-1.5"><Label>Bransjer (NACE)</Label><NacePicker value={nace} onChange={setNace} name={name} description={industry} /></div>
           <div className="grid grid-cols-2 gap-2">
             {[
               { v: true, t: "Oppstart / konsept", d: "Vurderes på potensial (*)" },
@@ -93,10 +112,13 @@ function Dashboard() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h3 className="text-lg font-semibold">{a.name}</h3>
-                    <p className="text-xs text-muted-foreground">{a.isStartup ? "Oppstart" : "Etablert"}{a.industry && ` · ${a.industry}`} · {new Date(a.updatedAt).toLocaleDateString("nb-NO")}</p>
+                    <p className="text-xs text-muted-foreground">{a.isStartup ? "Oppstart" : "Etablert"}{a.orgNumber && ` · ${a.orgNumber}`} · {new Date(a.updatedAt).toLocaleDateString("nb-NO")}</p>
                   </div>
                   <RilBadge level={r.total} asterisk={r.asterisk} size="sm" />
                 </div>
+                {a.nace && a.nace.length > 0 && (
+                  <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">{a.nace.map((n) => `${n.code} ${n.name}`).join(" · ")}</p>
+                )}
                 <div className="mt-4 flex gap-2">
                   {DOMAINS.map((d) => (
                     <span key={d.id} className="rounded-full px-2.5 py-0.5 text-xs font-semibold text-primary-foreground" style={{ backgroundColor: domainColor[d.id] }}>
